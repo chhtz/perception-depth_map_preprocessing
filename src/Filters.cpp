@@ -52,3 +52,64 @@ unsigned Filters::checkPoints(const Eigen::Vector3f& origin, const Eigen::Vector
         return 1;
     return 0;
 }
+
+
+// Fit a line through an equidistant set of points.
+// Allows to iterate through a moving window, by adding to the right and removing from the left
+struct LineFit
+{
+    LineFit(const Eigen::VectorXf & values)
+        : start(0), n(values.size())
+        , x_sum(n*(n-1)/2), xx_sum(n*(n-1)*(2*n-1)/6), xy_sum(0.0f)
+        , y_sum(values.sum()), yy_sum(values.squaredNorm())
+    {
+        for(int i=1; i<n; ++i)
+            xy_sum += i*values[i];
+    }
+
+    void pop_front(float y)
+    {
+        x_sum -= start; xx_sum -= start*start;
+        xy_sum -= start*y;
+        y_sum -= y; yy_sum -= y*y;
+        ++start; --n;
+    }
+    void push_back(float y)
+    {
+        int next = start+n;
+        x_sum += next; xx_sum += next * next;
+        xy_sum += next * y;
+        y_sum += y; yy_sum += y*y;
+        ++n;
+    }
+
+
+
+    int start, n;
+    float x_sum, xx_sum, xy_sum, y_sum, yy_sum;
+};
+
+
+void Filters::extractEdges(std::vector<DepthMapEdge>& edges, const base::samples::DepthMap& laser_scan, int kernel_size, float min_gradient)
+{
+    if(laser_scan.remissions.empty())
+    {
+        std::cerr << "No remissions in DepthMap, cannot extract edges!\n";
+        return;
+    }
+
+    typedef base::samples::DepthMap::DepthMatrixMapConst DepthMatrixMapConst;
+
+    DepthMatrixMapConst remissions(laser_scan.remissions.data(), laser_scan.horizontal_size, laser_scan.vertical_size);
+
+
+    for(int row = 0; row < remissions.rows(); ++row)
+    {
+        for(int col = kernel_size; col < remissions.cols(); ++col)
+        {
+
+        }
+
+    }
+
+}

@@ -6,6 +6,12 @@
 namespace depth_map_preprocessing
 {
 
+struct DepthMapEdge {
+    base::Vector3d position;
+    double gradient; // in intensity/rad
+};
+
+
 class Filters
 {
 public:
@@ -27,6 +33,11 @@ public:
     * @param min_neighbors minimum number of valid neighbors each measurement should have
     */
     static void filterOutliers(base::samples::DepthMap &laser_scan, double max_deviation_angle, unsigned min_neighbors = 1);
+
+    /**
+     *
+     */
+    static void extractEdges(std::vector<DepthMapEdge>& edges, const base::samples::DepthMap& laser_scan, int kernel_size, float min_gradient);
 
 protected:
 
